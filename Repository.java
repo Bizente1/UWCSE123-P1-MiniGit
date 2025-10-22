@@ -3,9 +3,148 @@ import java.text.SimpleDateFormat;
 
 public class Repository {
 
+    private String name;
+    private Commit head;
+    private int size;
     /**
      * TODO: Implement your code here.
      */
+
+    public Repository(String name){
+        if(name == null || name.isEmpty()){
+            throw new IllegalArgumentException("A null or empty name was given");
+        }
+
+        this.name = name;
+        this.size = 0;
+        this.head = null;
+    }
+
+    public String getRepoHead(){
+        if(head == null){
+            return null;
+        }
+
+        return head.id;
+    }
+
+    public int getRepoSize(){
+        return size;
+    }
+
+    public String toString(){
+        if(size == 0){
+            return name + " - No commits";
+        }
+
+        return name + " - Current head: " + head.toString();
+    }
+
+    public boolean contains(String targetId){
+        if(targetId == null){
+            throw new IllegalArgumentException("target Id given was null");
+        }
+
+        Commit curr = head;
+        while(curr != null){
+            if(targetId.equals(curr.id)){
+                return true;
+            }
+            curr = curr.past;
+        }
+
+        return false;
+    }
+
+    public String getHistory(int n){
+        if(n <= 0){
+            throw new IllegalArgumentException("number given was not positive");
+        }
+
+        String toReturn = "";
+        Commit curr = head;
+        int count = n;
+
+        if(curr == null){
+            return toReturn;
+        }
+
+        if(curr != null){
+            toReturn += curr.toString();
+            if(curr.past == null || count <= 1){
+                return toReturn;
+            }
+            toReturn += "\n";
+            curr = curr.past;
+            count--;
+        }
+        while(curr.past != null && count > 1){
+            toReturn += curr.toString() + "\n";
+            curr = curr.past;
+            count--;
+        }
+
+        return toReturn += curr.toString();
+    }
+
+    public String commit(String message){
+        if(message == null){
+            throw new IllegalArgumentException("message given was null");
+        }
+
+        size++;
+
+        head = new Commit(message, head);
+        return head.id;
+   
+
+        // head = new Commit(message);
+        // return head.id;
+
+    }
+
+    public boolean drop(String targetId){
+        if(targetId == null){
+            throw new IllegalArgumentException("target Id given was null");
+        }
+        
+        Commit curr = head;
+
+        if(curr == null){
+            return false;
+        }
+
+        if(targetId.equals(curr.id)){
+                head = curr.past;
+                size--;
+                return true;
+            }
+
+        while(curr != null){
+            if(curr.past != null && targetId.equals(curr.past.id)){
+                curr.past = curr.past.past;
+                size--;
+                return true;
+            }
+            curr = curr.past;
+        }
+
+        return false;
+    }
+
+    public void synchronize(Repository other){
+        if(other == null){
+            throw new IllegalArgumentException("Other repository given was null");
+        }
+        
+        Commit curr = head;
+
+        // while (curr != null || ) {
+            
+        // }
+
+
+    }
 
     /**
      * DO NOT MODIFY
