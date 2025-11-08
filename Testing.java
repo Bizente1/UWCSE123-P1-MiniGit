@@ -1,5 +1,7 @@
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.beans.Transient;
 import java.util.*;
 
 public class Testing {
@@ -14,6 +16,42 @@ public class Testing {
         repo2 = new Repository("repo2");
         Repository.Commit.resetIds();
     }
+
+    @Test
+    @Timeout(1)
+    @DisplayName("Switching Heads")
+    public void switchHeads(){
+        repo1.commit("0 Commit");
+        repo2.commit("1 Commit");
+        repo1.synchronize(repo2);
+        assertEquals("1", repo1.getRepoHead());
+
+    }
+
+    @Test
+    @Timeout(1)
+    @DisplayName("Adds remaining of commits to other")
+    public void saveRemaindor() throws InterruptedException{
+        commitAll(repo1, new String[]{"0", "1", "2", "3"});
+        repo2.commit("4");
+        repo1.synchronize(repo2);
+        assertEquals("1", repo1.getRepoHead());
+
+    }
+
+    @Test
+    @Timeout(1)
+    @DisplayName("weaving")
+    public void save(){
+        repo1.commit("0");
+        repo2.commit("1");
+        repo1.commit("2");
+        repo1.synchronize(repo2);
+        assertEquals("1", repo1.getRepoHead());
+
+    }
+
+
 
     // TODO: Write your tests here!
 
