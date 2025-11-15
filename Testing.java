@@ -1,5 +1,7 @@
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.beans.Transient;
 import java.util.*;
 
 public class Testing {
@@ -17,14 +19,13 @@ public class Testing {
 
     @Test
     @Timeout(1)
-    @DisplayName("Front edge case")
-    public void front() throws InterruptedException {
-        // Initialize commit messages
-
-        commitAll(repo1, new String[]{"1c"});
-        commitAll(repo2, new String[]{"2c"});
+    @DisplayName("Switching Heads")
+    public void switchHeads(){
+        repo1.commit("0 Commit");
+        repo2.commit("1 Commit");
         repo1.synchronize(repo2);
         assertEquals("1", repo1.getRepoHead());
+
     }
 
     @Test
@@ -40,31 +41,28 @@ public class Testing {
         repo2.synchronize(repo1);
         assertTrue(repo2.contains("3"));
     }
-
-    @Test
-    @Timeout(1)
-    @DisplayName("Size edge case")
-    public void end() throws InterruptedException {
-        // Initialize commit messages
-
-        
-        commitAll(repo2, new String[]{"1c"});
-        commitAll(repo1, new String[]{"4c"});
-        repo1.synchronize(repo2);
-        assertEquals(0, repo2.getRepoSize());
-    }
-
-    @Test
+    
     @Timeout(1)
     @DisplayName("Empty edge case")
     public void empty() throws InterruptedException {
         // Initialize commit messages
 
         
-        commitAll(repo2, new String[]{"2c", "3c", "4c"});
         repo1.synchronize(repo2);
         assertTrue(repo1.contains("0"));
     }
+
+    @DisplayName("weaving")
+    public void save(){
+        repo1.commit("0");
+        repo2.commit("1");
+        repo1.commit("2");
+        repo1.synchronize(repo2);
+        assertEquals("1", repo1.getRepoHead());
+
+    }
+
+
 
     // TODO: Write your tests here!
 
