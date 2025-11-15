@@ -11,6 +11,7 @@ public class Testing {
     // Occurs before each of the individual test cases
     // (creates new repos and resets commit ids)
     @BeforeEach
+    @Timeout(1)
     public void setUp() {
         repo1 = new Repository("repo1");
         repo2 = new Repository("repo2");
@@ -20,45 +21,78 @@ public class Testing {
     @Test
     @Timeout(1)
     @DisplayName("Switching Heads")
-    public void switchHeads(){
-        repo1.commit("0 Commit");
-        repo2.commit("1 Commit");
+    public void switchHeads() throws InterruptedException{
+        repo1.commit("one");
+        Thread.sleep(1);
+        repo2.commit("two");
         repo1.synchronize(repo2);
-        assertEquals("1", repo1.getRepoHead());
+        System.out.println(repo1.getHistory(8));
+        assertEquals(2, repo1.getRepoSize());
+        assertEquals(0, repo2.getRepoSize());
+        testHistory(repo1, 2, new String[]{"one", "two"});
+
 
     }
 
     @Test
     @Timeout(1)
-    @DisplayName("Middle case")
-    public void middle() throws InterruptedException {
-        // Initialize commit messages
-
-        commitAll(repo1, new String[]{"1c", "2c"});
-        commitAll(repo2, new String[]{"3c"});
-        commitAll(repo1, new String[]{"4c"});
-        commitAll(repo2, new String[]{"5c", "6c"});
+    @DisplayName("Adds remaining of commits to other")
+    public void saveRemaindor() throws InterruptedException{
+        commitAll(repo1, new String[]{"0", "1", "2", "3"});
+        repo2.commit("4");
         repo2.synchronize(repo1);
-        assertTrue(repo2.contains("3"));
+        assertEquals(0, repo1.getRepoSize());
+        assertEquals(5, repo2.getRepoSize());
+        testHistory(repo2, 5, new String[]{"0", "1", "2", "3", "4"});
+
     }
-    
+
+    @Test
     @Timeout(1)
-    @DisplayName("Empty edge case")
-    public void empty() throws InterruptedException {
-        // Initialize commit messages
-
-        
+    @DisplayName("weaving")
+    public void save() throws InterruptedException{
+        repo1.commit("0");
+        Thread.sleep(1);
+        repo2.commit("1");
+        Thread.sleep(1);
+        repo1.commit("2");
+        Thread.sleep(1);
         repo1.synchronize(repo2);
-        assertTrue(repo1.contains("0"));
+        assertEquals(3, repo1.getRepoSize());
+        assertEquals(0, repo2.getRepoSize());
+        testHistory(repo1, 3, new String[]{"0", "1", "2"});
+
     }
 
-    @DisplayName("weaving")
-    public void save(){
-        repo1.commit("0");
-        repo2.commit("1");
-        repo1.commit("2");
+    @Test
+    @Timeout(1)
+    @DisplayName("empty case")
+    public void emptyCase() throws InterruptedException{
+        commitAll(repo2, new String[]{"0", "1", "2", "3"});
         repo1.synchronize(repo2);
-        assertEquals("1", repo1.getRepoHead());
+        assertEquals(4, repo1.getRepoSize());
+        assertEquals(0, repo2.getRepoSize());
+        testHistory(repo1, 3, new String[]{"0", "1", "2", "3"});
+
+    }
+
+    @Test
+    @Timeout(1)
+    @DisplayName("Multiple test")
+    public void multiTest() throws InterruptedException{
+        commitAll(repo2, new String[]{"0", "1", "2"});
+        commitAll(repo1, new String[]{"3", "4"});
+        repo2.commit("5");
+        Thread.sleep(1);
+        repo1.commit("6");
+        Thread.sleep(1);
+        repo2.commit("7");
+        repo1.synchronize(repo2);
+        System.out.println(repo1.getHistory(8));
+        assertEquals(8, repo1.getRepoSize());
+        assertEquals(0, repo2.getRepoSize());
+        
+        testHistory(repo1, 8, new String[]{"0", "1", "2", "3", "4", "5", "6", "7"});
 
     }
 
@@ -91,7 +125,7 @@ public class Testing {
         // Commit all of the provided messages
         for (String message : messages) {
             int size = repo.getRepoSize();
-            repo.commit(message); 
+            repo.commit(message);
             
             // Make sure exactly one commit was added to the repo
             assertEquals(size + 1, repo.getRepoSize(),

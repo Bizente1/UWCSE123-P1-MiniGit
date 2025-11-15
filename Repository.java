@@ -17,7 +17,7 @@ public class Repository {
 
     /*  
     Pre: This is the Constructor for the class, it takes a String to name the Repo
-        and will through a exception if the name given is null or empty
+        and will throw a IllegalArgumentException if the String given is null or empty
 
     Post: Will create a Repository Object with no Commits and a size of zero
     */
@@ -73,7 +73,7 @@ public class Repository {
 
     /*
     Pre: This method takes a String that is suppose to match to a id of a pervious Commit
-        If the given String is null a error will be thrown
+        If the given String is null a IllegalArgumentException will be thrown
 
     Post: Returns true if id given is matches a id of a commits in the repository
         If the id given does not match any id of a commit in the repository then it will return false
@@ -96,7 +96,7 @@ public class Repository {
 
     /*
     Pre: Takes a integer for how many commits you want to look back in the repository.
-        If the integer value given is equal or less than zero a error will be thrown.
+        If the integer value given is equal or less than zero a IllegalArgumentException will be thrown.
 
     Post: Returns a String value with all the commints going back the number of the integer given.
         If the integer given is equal to or more than the amount of commits in the repository it 
@@ -112,31 +112,25 @@ public class Repository {
         Commit curr = head;
         int count = n;
 
-        if (curr == null) {
-            return toReturn;
-        }
-
-        if (curr != null) {
-            toReturn += curr.toString();
-            if (curr.past == null || count <= 1) {
-                return toReturn;
+        while (curr != null && count > 0) {
+            if(curr.past != null  && count > 0){
+                toReturn += curr.toString() + "\n";
+                curr = curr.past;
+                count--;
+            }else{
+                toReturn += curr.toString();
+                curr = curr.past;
+                count--;
             }
-            toReturn += "\n";
-            curr = curr.past;
-            count--;
-        }
-        while (curr.past != null && count > 1) {
-            toReturn += curr.toString() + "\n";
-            curr = curr.past;
-            count--;
         }
 
-        return toReturn += curr.toString();
+        return toReturn;
+
     }
 
     /*
-    Pre: Take a String that will be the method for the commit being created.
-        If the given String is null a error will be thrown
+    Pre: Take a String that will be the message for the Commit you are making.
+        If the given String is null a IllegalArgumentException will be thrown
 
     Post: Creates a Commit that has its message set as the one given.
         It increase the size of the repository and sets the head of repository
@@ -150,6 +144,7 @@ public class Repository {
         size++;
 
         head = new Commit(message, head);
+        System.out.println(head.timeStamp);
         return head.id;
 
     }
@@ -193,10 +188,10 @@ public class Repository {
 
     /*
     Pre: Takes another Repository as a parameter.
-        If the Repository given is null a error will be thrown.
+        If the Repository given is null a IllegalArgumentException will be thrown.
 
     Post: Takes the given Repository and inserts the Commits from the given Repository into the
-        Repository call the method in the order that the commits where made and leaves the given
+        Repository that called this method and leaves the given 
         Repository empty and with size zero.
         If the head of the given Repository is greater than the head of the current Repository
         it will become the new head of the current Repository.
@@ -208,20 +203,22 @@ public class Repository {
         if (other == null) {
             throw new IllegalArgumentException("Other repository given was null");
         }
-
-        Commit curr = head;
-        Commit temp;
         
-        if (head == null && other.head != null) {
+        if (head == null) {
             head = other.head;
             other.head = null;
             size = other.size;
             other.size = 0;
         }
 
-        if (curr != null && other.head != null && (head.timeStamp < other.head.timeStamp)) {
+        Commit curr = head;
+        Commit temp = other.head;
+
+
+
+        if ((head != null && other.head != null) && (head.timeStamp < other.head.timeStamp)) {
             temp = other.head.past;
-            other.head.past = curr;
+            other.head.past = head;
             head = other.head;
             other.head = temp;
             curr = head;
@@ -229,13 +226,14 @@ public class Repository {
             size++;
         }
 
+
         while (curr != null && other.head != null) {
             if (curr.past == null) {
                 curr.past = other.head;
                 other.head = null;
+                size += other.size;
                 other.size = 0;
-            }
-            if (curr.past.timeStamp < other.head.timeStamp) {
+            }else if(curr.past.timeStamp < other.head.timeStamp) {
                 temp = other.head.past;
                 other.head.past = curr.past;
                 curr.past = other.head;
@@ -246,6 +244,8 @@ public class Repository {
             curr = curr.past;
 
         }
+
+        System.out.println(size);
 
     }
 
