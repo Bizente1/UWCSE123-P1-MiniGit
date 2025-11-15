@@ -15,6 +15,57 @@ public class Testing {
         Repository.Commit.resetIds();
     }
 
+    @Test
+    @Timeout(1)
+    @DisplayName("Front edge case")
+    public void front() throws InterruptedException {
+        // Initialize commit messages
+
+        commitAll(repo1, new String[]{"1c"});
+        commitAll(repo2, new String[]{"2c"});
+        repo1.synchronize(repo2);
+        assertEquals("1", repo1.getRepoHead());
+    }
+
+    @Test
+    @Timeout(1)
+    @DisplayName("Middle case")
+    public void middle() throws InterruptedException {
+        // Initialize commit messages
+
+        commitAll(repo1, new String[]{"1c", "2c"});
+        commitAll(repo2, new String[]{"3c"});
+        commitAll(repo1, new String[]{"4c"});
+        commitAll(repo2, new String[]{"5c", "6c"});
+        repo2.synchronize(repo1);
+        assertTrue(repo2.contains("3"));
+    }
+
+    @Test
+    @Timeout(1)
+    @DisplayName("Size edge case")
+    public void end() throws InterruptedException {
+        // Initialize commit messages
+
+        
+        commitAll(repo2, new String[]{"1c"});
+        commitAll(repo1, new String[]{"4c"});
+        repo1.synchronize(repo2);
+        assertEquals(0, repo2.getRepoSize());
+    }
+
+    @Test
+    @Timeout(1)
+    @DisplayName("Empty edge case")
+    public void empty() throws InterruptedException {
+        // Initialize commit messages
+
+        
+        commitAll(repo2, new String[]{"2c", "3c", "4c"});
+        repo1.synchronize(repo2);
+        assertTrue(repo1.contains("0"));
+    }
+
     // TODO: Write your tests here!
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +93,7 @@ public class Testing {
         // Commit all of the provided messages
         for (String message : messages) {
             int size = repo.getRepoSize();
-            repo.commit(message);
+            repo.commit(message); 
             
             // Make sure exactly one commit was added to the repo
             assertEquals(size + 1, repo.getRepoSize(),

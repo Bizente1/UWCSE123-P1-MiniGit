@@ -1,17 +1,28 @@
 import java.util.*;
 import java.text.SimpleDateFormat;
+// Bisente Deleon-Oronia
+// 10/29/25
+// CSE 123
+// Programming Assignment 0: Ciphers
+// Trien Vuong
 
+//This class is a Repository that keeps track of your 
+//code at different points in time by making Commits.
 public class Repository {
 
     private String name;
     private Commit head;
     private int size;
-    /**
-     * TODO: Implement your code here.
-     */
 
-    public Repository(String name){
-        if(name == null || name.isEmpty()){
+
+    /*  
+    Pre: This is the Constructor for the class, it takes a String to name the Repo
+        and will through a exception if the name given is null or empty
+
+    Post: Will create a Repository Object with no Commits and a size of zero
+    */
+    public Repository(String name) {
+        if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("A null or empty name was given");
         }
 
@@ -20,34 +31,61 @@ public class Repository {
         this.head = null;
     }
 
-    public String getRepoHead(){
-        if(head == null){
+    /*  
+    Pre: None
+
+    Post: Returns the id of the current repo head as a String
+        If the there is no current Repo Head it will return as null
+    */
+    public String getRepoHead() {
+        if (head == null) {
             return null;
         }
 
         return head.id;
     }
 
-    public int getRepoSize(){
+    /*  
+    Pre: None
+
+    Post: Returns the size of the current repo as a integer
+    */
+    public int getRepoSize() {
         return size;
     }
 
-    public String toString(){
-        if(size == 0){
+    /*  
+    Pre: None
+
+    Post: Returns a String with the format: 
+        <Repo Name> - Current head: <Commit id> at <Commit date> at <Commit TimeStamp + Time Zone>: <Commit message> 
+
+        If the Repo has no commits, it will instead return:
+        <Repo Name> - No commits
+    */
+    public String toString() {
+        if (size == 0) {
             return name + " - No commits";
         }
 
         return name + " - Current head: " + head.toString();
     }
 
-    public boolean contains(String targetId){
-        if(targetId == null){
+    /*
+    Pre: This method takes a String that is suppose to match to a id of a pervious Commit
+        If the given String is null a error will be thrown
+
+    Post: Returns true if id given is matches a id of a commits in the repository
+        If the id given does not match any id of a commit in the repository then it will return false
+    */
+    public boolean contains(String targetId) {
+        if (targetId == null) {
             throw new IllegalArgumentException("target Id given was null");
         }
 
         Commit curr = head;
-        while(curr != null){
-            if(targetId.equals(curr.id)){
+        while (curr != null) {
+            if (targetId.equals(curr.id)) {
                 return true;
             }
             curr = curr.past;
@@ -56,8 +94,17 @@ public class Repository {
         return false;
     }
 
-    public String getHistory(int n){
-        if(n <= 0){
+    /*
+    Pre: Takes a integer for how many commits you want to look back in the repository.
+        If the integer value given is equal or less than zero a error will be thrown.
+
+    Post: Returns a String value with all the commints going back the number of the integer given.
+        If the integer given is equal to or more than the amount of commits in the repository it 
+        will only print out the all commits in the repository.
+        If there are no commits in the repository it will return a empty String.
+    */
+    public String getHistory(int n) {
+        if (n <= 0) {
             throw new IllegalArgumentException("number given was not positive");
         }
 
@@ -65,20 +112,20 @@ public class Repository {
         Commit curr = head;
         int count = n;
 
-        if(curr == null){
+        if (curr == null) {
             return toReturn;
         }
 
-        if(curr != null){
+        if (curr != null) {
             toReturn += curr.toString();
-            if(curr.past == null || count <= 1){
+            if (curr.past == null || count <= 1) {
                 return toReturn;
             }
             toReturn += "\n";
             curr = curr.past;
             count--;
         }
-        while(curr.past != null && count > 1){
+        while (curr.past != null && count > 1) {
             toReturn += curr.toString() + "\n";
             curr = curr.past;
             count--;
@@ -87,8 +134,16 @@ public class Repository {
         return toReturn += curr.toString();
     }
 
-    public String commit(String message){
-        if(message == null){
+    /*
+    Pre: Take a String that will be the method for the commit being created.
+        If the given String is null a error will be thrown
+
+    Post: Creates a Commit that has its message set as the one given.
+        It increase the size of the repository and sets the head of repository
+        to be the commit just created.
+    */
+    public String commit(String message) {
+        if (message == null) {
             throw new IllegalArgumentException("message given was null");
         }
 
@@ -96,32 +151,36 @@ public class Repository {
 
         head = new Commit(message, head);
         return head.id;
-   
-
-        // head = new Commit(message);
-        // return head.id;
 
     }
 
-    public boolean drop(String targetId){
-        if(targetId == null){
+    /*
+    Pre: Takes a String which is the Id of the commit you want to remove from the repository.
+        If the String given is null then a error will be thrown.
+
+    Post: Returns True or False whether the Commit was found and dropped or not.
+        If the Commit is found and drop, the size of the Repo will decrease by one.
+        If the repo removed is the head then the Commit before the head will become the new head.
+    */
+    public boolean drop(String targetId) {
+        if (targetId == null) {
             throw new IllegalArgumentException("target Id given was null");
         }
-        
+
         Commit curr = head;
 
-        if(curr == null){
+        if (curr == null) {
             return false;
         }
 
-        if(targetId.equals(curr.id)){
-                head = curr.past;
-                size--;
-                return true;
-            }
+        if (targetId.equals(curr.id)) {
+            head = curr.past;
+            size--;
+            return true;
+        }
 
-        while(curr != null){
-            if(curr.past != null && targetId.equals(curr.past.id)){
+        while (curr != null) {
+            if (curr.past != null && targetId.equals(curr.past.id)) {
                 curr.past = curr.past.past;
                 size--;
                 return true;
@@ -132,17 +191,61 @@ public class Repository {
         return false;
     }
 
-    public void synchronize(Repository other){
-        if(other == null){
+    /*
+    Pre: Takes another Repository as a parameter.
+        If the Repository given is null a error will be thrown.
+
+    Post: Takes the given Repository and inserts the Commits from the given Repository into the
+        Repository call the method in the order that the commits where made and leaves the given
+        Repository empty and with size zero.
+        If the head of the given Repository is greater than the head of the current Repository
+        it will become the new head of the current Repository.
+        If the Repository given is empty then the current list remains unchanged.
+        If the current Repository is empty then all the commits from the given Repository will
+        be moved to the current Repository
+    */
+    public void synchronize(Repository other) {
+        if (other == null) {
             throw new IllegalArgumentException("Other repository given was null");
         }
-        
+
         Commit curr = head;
+        Commit temp;
+        
+        if (head == null && other.head != null) {
+            head = other.head;
+            other.head = null;
+            size = other.size;
+            other.size = 0;
+        }
 
-        // while (curr != null || ) {
-            
-        // }
+        if (curr != null && other.head != null && (head.timeStamp < other.head.timeStamp)) {
+            temp = other.head.past;
+            other.head.past = curr;
+            head = other.head;
+            other.head = temp;
+            curr = head;
+            other.size--;
+            size++;
+        }
 
+        while (curr != null && other.head != null) {
+            if (curr.past == null) {
+                curr.past = other.head;
+                other.head = null;
+                other.size = 0;
+            }
+            if (curr.past.timeStamp < other.head.timeStamp) {
+                temp = other.head.past;
+                other.head.past = curr.past;
+                curr.past = other.head;
+                other.head = temp;
+                other.size--;
+                size++;
+            }
+            curr = curr.past;
+
+        }
 
     }
 
@@ -153,9 +256,9 @@ public class Repository {
      * and the time that the commit was made. A commit also stores
      * a reference to the immediately previous commit if it exists.
      *
-     * Staff Note: You may notice that the comments in this 
-     * class openly mention the fields of the class. This is fine 
-     * because the fields of the Commit class are public. In general, 
+     * Staff Note: You may notice that the comments in this
+     * class openly mention the fields of the class. This is fine
+     * because the fields of the Commit class are public. In general,
      * be careful about revealing implementation details!
      */
     public static class Commit {
@@ -185,9 +288,11 @@ public class Repository {
         /**
          * Constructs a commit object. The unique identifier and timestamp
          * are automatically generated.
-         * @param message A message describing the changes made in this commit. Should be non-null.
-         * @param past A reference to the commit made immediately before this
-         *             commit.
+         * 
+         * @param message A message describing the changes made in this commit. Should
+         *                be non-null.
+         * @param past    A reference to the commit made immediately before this
+         *                commit.
          */
         public Commit(String message, Commit past) {
             this.id = "" + currentCommitID++;
@@ -199,7 +304,9 @@ public class Repository {
         /**
          * Constructs a commit object with no previous commit. The unique
          * identifier and timestamp are automatically generated.
-         * @param message A message describing the changes made in this commit. Should be non-null.
+         * 
+         * @param message A message describing the changes made in this commit. Should
+         *                be non-null.
          */
         public Commit(String message) {
             this(message, null);
@@ -209,7 +316,8 @@ public class Repository {
          * Returns a string representation of this commit. The string
          * representation consists of this commit's unique identifier,
          * timestamp, and message, in the following form:
-         *      "[identifier] at [timestamp]: [message]"
+         * "[identifier] at [timestamp]: [message]"
+         * 
          * @return The string representation of this collection.
          */
         @Override
@@ -221,9 +329,9 @@ public class Repository {
         }
 
         /**
-        * Resets the IDs of the commit nodes such that they reset to 0.
-        * Primarily for testing purposes.
-        */
+         * Resets the IDs of the commit nodes such that they reset to 0.
+         * Primarily for testing purposes.
+         */
         public static void resetIds() {
             Commit.currentCommitID = 0;
         }
